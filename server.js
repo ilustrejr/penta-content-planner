@@ -148,6 +148,83 @@ app.delete("/library/:id/:type/:filename", async (req, res) => {
   }
 });
 
+// =============== DEBUG TLS CRU PRO R2 (sem SDK, sem credenciais) ===============
+app.get("/debug/r2-tls", async (_req, res) => {
+  const tls = await import("node:tls");
+  const url = await import("node:url");
+  const endpoint = process.env.R2_ENDPOINT || "";
+  let host = "";
+  try {
+    host = new url.URL(endpoint).hostname;
+  } catch (e) {
+    return res.json({ ok: false, error: "R2_ENDPOINT inválida: " + e.message });
+  }
+
+  const result = { host, tests: {} };
+
+  // Test A: TLS handshake cru, observa o cert
+  result.tests.tlsHandshake = await new Promise((resolve) => {
+    const socket = tls.connect(
+      { host, port: 443, servername: host, rejectUnauthorized: false, timeout: 8000 },
+      () => {
+        const cert = socket.getPeerCertificate(true);
+        resolve({
+          ok: true,
+          authorized: socket.authorized,
+          authorizationError: socket.authorizationError ? String(socket.authorizationError) : null,
+          cipher: socket.getCipher(),
+          protocol: socket.getProtocol(),
+          cert: {
+            subject: cert.subject,
+            issuer: cert.issuer,
+            valid_from: cert.valid_from,
+            valid_to: cert.valid_to,
+            subjectaltname: cert.subjectaltname,
+          },
+        });
+        socket.end();
+      }
+    );
+    socket.on("error", (e) => {
+      resolve({
+        ok: false,
+        errorName: e.name,
+        errorCode: e.code,
+        errorMessage: e.message,
+      });
+    });
+    socket.on("timeout", () => {
+      socket.destroy();
+      resolve({ ok: false, error: "timeout" });
+    });
+  });
+
+  // Test B: fetch HTTPS cru no endpoint
+  try {
+    const r = await fetch(endpoint, { method: "GET" });
+    result.tests.fetchRoot = { ok: true, status: r.status, statusText: r.statusText };
+  } catch (e) {
+    result.tests.fetchRoot = {
+      ok: false,
+      errorName: e.name,
+      errorCode: e.code,
+      errorMessage: e.message,
+      cause: e.cause?.message || null,
+    };
+  }
+
+  // Test C: DNS resolution
+  try {
+    const dns = await import("node:dns/promises");
+    const addrs = await dns.lookup(host, { all: true });
+    result.tests.dns = { ok: true, addresses: addrs };
+  } catch (e) {
+    result.tests.dns = { ok: false, errorMessage: e.message };
+  }
+
+  res.json(result);
+});
+
 // =============== DEBUG R2 (temporário) ===============
 app.get("/debug/r2", async (_req, res) => {
   const result = {
