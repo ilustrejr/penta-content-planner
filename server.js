@@ -48,12 +48,18 @@ app.use(authMiddleware);
 // já liberadas dentro do middleware)
 app.use(express.static(path.join(__dirname, "public")));
 
+// Helper: loga erro completo no stderr e responde com mensagem
+function handleError(res, e, status = 500, label = "endpoint") {
+  console.error(`[ERROR ${label}]`, e);
+  res.status(status).json({ ok: false, error: e.message });
+}
+
 // =============== CLIENTES ===============
 app.get("/clients", async (_req, res) => {
   try {
     res.json(await listClients());
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    handleError(res, e, 500, "GET /clients");
   }
 });
 
@@ -61,7 +67,7 @@ app.get("/clients/:id", async (req, res) => {
   try {
     res.json(await getClient(req.params.id));
   } catch (e) {
-    res.status(404).json({ error: e.message });
+    handleError(res, e, 404, "GET /clients/:id");
   }
 });
 
@@ -70,7 +76,7 @@ app.post("/clients", async (req, res) => {
     const created = await createClient(req.body);
     res.json({ ok: true, client: created });
   } catch (e) {
-    res.status(400).json({ ok: false, error: e.message });
+    handleError(res, e, 400, "POST /clients");
   }
 });
 
@@ -79,7 +85,7 @@ app.put("/clients/:id", async (req, res) => {
     const updated = await updateClient(req.params.id, req.body);
     res.json({ ok: true, client: updated });
   } catch (e) {
-    res.status(400).json({ ok: false, error: e.message });
+    handleError(res, e, 400, "PUT /clients/:id");
   }
 });
 
@@ -92,7 +98,7 @@ app.get("/library/:id", async (req, res) => {
       transcripts: lib.transcripts.map((t) => ({ filename: t.filename, length: t.content.length })),
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    handleError(res, e, 500, "GET /library/:id");
   }
 });
 
@@ -101,7 +107,7 @@ app.get("/library/:id/:type/:filename", async (req, res) => {
     const content = await getLibraryItem(req.params.id, req.params.type, req.params.filename);
     res.json({ ok: true, content });
   } catch (e) {
-    res.status(404).json({ ok: false, error: e.message });
+    handleError(res, e, 404, "GET /library/:id/:type/:filename");
   }
 });
 
@@ -115,7 +121,7 @@ app.post("/library/:id/:type", async (req, res) => {
     );
     res.json({ ok: true, ...result });
   } catch (e) {
-    res.status(400).json({ ok: false, error: e.message });
+    handleError(res, e, 400, "POST /library/:id/:type");
   }
 });
 
@@ -129,7 +135,7 @@ app.put("/library/:id/:type/:filename", async (req, res) => {
     );
     res.json({ ok: true, ...result });
   } catch (e) {
-    res.status(400).json({ ok: false, error: e.message });
+    handleError(res, e, 400, "PUT /library/:id/:type/:filename");
   }
 });
 
@@ -138,8 +144,113 @@ app.delete("/library/:id/:type/:filename", async (req, res) => {
     await deleteLibraryItem(req.params.id, req.params.type, req.params.filename);
     res.json({ ok: true });
   } catch (e) {
-    res.status(400).json({ ok: false, error: e.message });
+    handleError(res, e, 400, "DELETE /library/:id/:type/:filename");
   }
+});
+
+// =============== DEBUG R2 (temporário) ===============
+app.get("/debug/r2", async (_req, res) => {
+  const result = {
+    env: {
+      STORAGE_BACKEND: process.env.STORAGE_BACKEND || null,
+      R2_ENDPOINT: process.env.R2_ENDPOINT || null,
+      R2_BUCKET: process.env.R2_BUCKET || null,
+      R2_ACCESS_KEY_ID_length: process.env.R2_ACCESS_KEY_ID?.length || 0,
+      R2_ACCESS_KEY_ID_prefix: process.env.R2_ACCESS_KEY_ID?.slice(0, 4) || null,
+      R2_SECRET_ACCESS_KEY_length: process.env.R2_SECRET_ACCESS_KEY?.length || 0,
+    },
+    tests: {},
+  };
+
+  // Test 1: importar S3 client e tentar ListBuckets (não exige permissão de bucket)
+  try {
+    const { S3Client, ListBucketsCommand, ListObjectsV2Command, PutObjectCommand } = await import("@aws-sdk/client-s3");
+    const client = new S3Client({
+      region: "auto",
+      endpoint: process.env.R2_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      },
+      forcePathStyle: true,
+    });
+
+    // Test 1: list buckets
+    try {
+      const r = await client.send(new ListBucketsCommand({}));
+      result.tests.listBuckets = {
+        ok: true,
+        bucketsFound: r.Buckets?.map((b) => b.Name) || [],
+      };
+    } catch (e) {
+      console.error("[DEBUG R2] ListBuckets error:", e);
+      result.tests.listBuckets = {
+        ok: false,
+        errorName: e.name,
+        errorMessage: e.message,
+        errorCode: e.code,
+        httpStatus: e.$metadata?.httpStatusCode,
+        cause: e.cause?.message || null,
+      };
+    }
+
+    // Test 2: list objects on bucket (mais restrito)
+    try {
+      const r = await client.send(
+        new ListObjectsV2Command({
+          Bucket: process.env.R2_BUCKET,
+          MaxKeys: 5,
+        })
+      );
+      result.tests.listObjects = {
+        ok: true,
+        objectCount: r.KeyCount || 0,
+        sample: r.Contents?.slice(0, 3).map((o) => o.Key) || [],
+      };
+    } catch (e) {
+      console.error("[DEBUG R2] ListObjects error:", e);
+      result.tests.listObjects = {
+        ok: false,
+        errorName: e.name,
+        errorMessage: e.message,
+        errorCode: e.code,
+        httpStatus: e.$metadata?.httpStatusCode,
+        cause: e.cause?.message || null,
+      };
+    }
+
+    // Test 3: tentar put de teste
+    try {
+      await client.send(
+        new PutObjectCommand({
+          Bucket: process.env.R2_BUCKET,
+          Key: "_debug-test.txt",
+          Body: "ok",
+          ContentType: "text/plain",
+        })
+      );
+      result.tests.putObject = { ok: true };
+    } catch (e) {
+      console.error("[DEBUG R2] PutObject error:", e);
+      result.tests.putObject = {
+        ok: false,
+        errorName: e.name,
+        errorMessage: e.message,
+        errorCode: e.code,
+        httpStatus: e.$metadata?.httpStatusCode,
+        cause: e.cause?.message || null,
+      };
+    }
+  } catch (e) {
+    console.error("[DEBUG R2] Outer error:", e);
+    result.tests.outer = {
+      ok: false,
+      errorName: e.name,
+      errorMessage: e.message,
+    };
+  }
+
+  res.json(result);
 });
 
 // =============== STATUS DO SISTEMA ===============
