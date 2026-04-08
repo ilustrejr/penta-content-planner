@@ -1,0 +1,47 @@
+{
+  "id": "jec-advogados",
+  "name": "Jucinsky & Caliari Advogados",
+  "instagram": "jecadvogados",
+  "website": "https://jecadvogados.com/",
+
+  "description": "Escritório de advocacia full service de Porto Alegre/RS, com atuação em todo o Brasil. Atende as áreas de Direito Empresarial, Bancário, Previdenciário, do Consumidor, Civil e do Trabalho. Posicionamento de mercado: técnica jurídica de alto nível combinada com linguagem extremamente acessível, sem juridiquês. A persona principal de conteúdo é o sócio sentado num clima de bar tomando whisky, explicando direito como se fosse para um amigo — daí a série 'Whisky com o seu Advogado'. O conteúdo deve sempre ser tecnicamente correto, mas nunca pedante. Foco em problemas reais do brasileiro comum: dívidas, INSS, contratos abusivos, planejamento de empresário. CTA padrão: link na bio ou DM no Instagram. Evitar qualquer tema de direito criminal.",
+
+  "seriesName": "Whisky com o seu Advogado",
+  "tone": "Casual, descontraído, advogado conversando como num bar com um amigo. Sem juridiquês, com analogias do dia a dia. Pode tomar um gole de whisky entre as falas.",
+  "captionStructure": "TÍTULO EM CAIXA ALTA na primeira linha + parágrafo curto explicativo + CTA com link na bio + hashtags",
+
+  "forbiddenTopics": ["direito criminal"],
+  "requiredBalance": ["empresarial", "bancário", "previdenciário"],
+  "preferredFormats": ["vídeo", "carrossel"],
+
+  "referenceProfiles": [
+    { "handle": "cscadv", "label": "referência empresarial/bancário" },
+    { "handle": "prevsite", "label": "referência previdenciário" }
+  ],
+
+  "hashtagsBase": ["#whiskycomseuadvogado", "#advocacia", "#seusdireitos"],
+  "extraInstructions": "Sempre referencie a série Whisky com o seu Advogado. Pode propor minisséries de múltiplos vídeos sobre um mesmo tema. CTA típico: 'clique no link da bio' ou 'manda DM'. Os vídeos costumam abrir com gancho forte de 3 segundos e fechar com convite para o próximo episódio.",
+
+  "newsFeeds": [
+    "https://g1.globo.com/rss/g1/economia/",
+    "https://g1.globo.com/rss/g1/politica/",
+    "https://agenciabrasil.ebc.com.br/rss/economia/feed.xml",
+    "https://agenciabrasil.ebc.com.br/rss/politica/feed.xml"
+  ],
+  "newsKeywords": [
+    "\\bINSS\\b", "aposentad", "\\bprevid[êe]nc", "\\bBPC\\b", "aux[íi]lio[- ]doen",
+    "benef[íi]cio do INSS", "revis[ãa]o de aposentad", "per[íi]cia m[ée]dica",
+    "juros abusiv", "superendivid", "revis[ãa]o contratual", "consignado",
+    "\\bFGTS\\b", "Banco Central", "pagar d[íi]vida", "renegocia[çc][ãa]o de d[íi]vida",
+    "direito empresarial", "fal[êe]ncia", "recupera[çc][ãa]o judicial", "\\bMEI\\b",
+    "simples nacional", "reforma tribut[áa]ria", "\\bSTJ\\b decide", "\\bSTF\\b decide",
+    "direito do consumidor", "Procon", "Justi[çc]a determina", "lei sancionada"
+  ],
+  "newsExclude": [
+    "criminal", "homic[íi]d", "tr[áa]fic", "assassin", "pol[íi]cia",
+    "fac[çc][ãa]o", "estupro", "hacker", "iraniano", "guerra", "terror",
+    "suic[íi]d", "armado", "balan[çc]a comercial", "pol[íi]tic[ao] externa"
+  ],
+
+  "recentPostsFallback": ""
+}

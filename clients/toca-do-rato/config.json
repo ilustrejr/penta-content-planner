@@ -1,0 +1,27 @@
+{
+  "id": "toca-do-rato",
+  "name": "Toca do Rato — Pizza e Jogos",
+  "instagram": "tocadorato_oficial",
+  "website": "",
+
+  "description": "Pizzaria com fliperama/arcade dentro. Conceito central: nostalgia + comida boa + galera reunida. Público-alvo: jovens 20-35 anos que curtem cultura pop dos anos 90/2000, gamers casuais, grupos de amigos. Tom de comunicação: divertido, casual, irreverente, com referências de games, arcade e memes leves. Conteúdo deve ser sempre visual: pizza saindo do forno, controles de fliperama, mesa cheia de amigos, barulho de moeda caindo, neon. NUNCA usar tom de 'restaurante chique' — é casual, despretensioso, divertido. CTA padrão: 'vem pra Toca' / reserva no WhatsApp ou link na bio. EDITE ESTA DESCRIÇÃO conforme o cliente real for entregando informações.",
+
+  "seriesName": "",
+  "tone": "Divertido, jovem, irreverente. Linguagem de internet sem exagero. Fala como amigo chamando outro pra sair: 'bora', 'ó', 'olha isso'. Sem formalidade, sem juridiquês de marketing. Pode usar gírias, memes leves, referências de games e cultura pop dos anos 90/2000 (fliperama, cartucho, arcade).",
+  "captionStructure": "Hook de 1 linha (provocativo, intrigante ou divertido) + 2-3 frases curtas explicando + CTA claro (ex: 'vem pra Toca', 'reserva sua mesa') + hashtags",
+
+  "forbiddenTopics": ["política", "polêmicas religiosas"],
+  "requiredBalance": ["pizzas/cardápio", "jogos/torneios/eventos", "ambiente/experiência"],
+  "preferredFormats": ["vídeo", "carrossel", "estático"],
+
+  "referenceProfiles": [],
+
+  "hashtagsBase": ["#tocadorato", "#pizzaegames", "#fliperama", "#arcade"],
+  "extraInstructions": "O Toca do Rato é uma pizzaria com fliperama/arcade dentro. O conceito é nostalgia + comida boa + galera reunida. Conteúdo deve transmitir esse clima: barulho de moeda caindo, controles de arcade, pizza quente, mesa cheia de amigos. Pode ser bem visual. Evita cara de 'restaurante chique' — é casual, despretensioso, divertido.",
+
+  "newsFeeds": [],
+  "newsKeywords": [],
+  "newsExclude": [],
+
+  "recentPostsFallback": ""
+}

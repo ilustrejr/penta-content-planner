@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>PENTA. Content Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- ============ TOPBAR ============ -->
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="logo">PENTA<span class="dot">.</span></div>
+    <span class="product-tag">Content Planner</span>
+  </div>
+  <p class="client-prompt">Escolha o cliente que deseja gerar o planejamento</p>
+  <div class="client-selector-row">
+    <select id="clientSelect">
+      <option value="">Carregando clientes...</option>
+    </select>
+    <button class="btn-add-client" id="btnAddClient">➕ Adicionar cliente</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="noClient" class="empty" style="display:none">
+    <h2>Nenhum cliente cadastrado</h2>
+    <p>Clique em <b>Adicionar cliente</b> no topo pra começar.</p>
+  </div>
+
+  <div id="clientApp" style="display:none">
+
+    <div id="clientInfo" class="client-card"></div>
+
+    <!-- ============ BIBLIOTECA (NO TOPO) ============ -->
+    <div class="card">
+      <h2>Biblioteca do cliente</h2>
+      <p class="info-text">Quanto mais conteúdo você adicionar aqui, melhor o briefing fica. Cada arquivo é lido automaticamente em toda geração.</p>
+
+      <div class="description-block">
+        <label style="margin-top:0">Descrição / orientações mestres</label>
+        <p class="info-text" style="margin-top:0">Texto livre que vai sempre junto com os arquivos pra orientar a IA. Inclua posicionamento, persona, públicos, regras gerais.</p>
+        <textarea id="clientDescription" placeholder="Ex: Escritório de advocacia full service. Tom casual..."></textarea>
+        <div class="save-row">
+          <button class="secondary" id="btnSaveDescription">💾 Salvar descrição</button>
+          <span class="save-feedback" id="descSaveFeedback"></span>
+        </div>
+      </div>
+
+      <div class="lib-stats" id="libStats">
+        <span><b>0</b>posts publicados</span>
+        <span><b>0</b>transcrições de vídeo</span>
+      </div>
+
+      <details id="libAddDetails">
+        <summary>➕ Adicionar conteúdo à biblioteca</summary>
+        <div class="row">
+          <div>
+            <label>Tipo</label>
+            <select id="libType">
+              <option value="posts">Post publicado (legenda)</option>
+              <option value="transcripts">Transcrição de vídeo</option>
+            </select>
+          </div>
+          <div>
+            <label>Nome do arquivo (opcional)</label>
+            <input type="text" id="libFilename" placeholder="ex: serie-busca-apreensao-ep01">
+          </div>
+        </div>
+        <label>Conteúdo</label>
+        <textarea id="libContent" placeholder="Cole aqui a legenda completa do post ou a transcrição do vídeo..." style="min-height:180px"></textarea>
+        <button class="secondary" id="libSaveBtn">💾 Salvar na biblioteca</button>
+      </details>
+
+      <details open>
+        <summary>📂 Posts publicados</summary>
+        <div class="lib-files" id="libPostsList"><div class="empty-list">—</div></div>
+      </details>
+
+      <details open>
+        <summary>🎬 Transcrições de vídeo</summary>
+        <div class="lib-files" id="libTranscriptsList"><div class="empty-list">—</div></div>
+      </details>
+    </div>
+
+    <!-- ============ GERAR PLANEJAMENTO ============ -->
+    <div class="card">
+      <h2>Gerar planejamento</h2>
+      <div class="row">
+        <div>
+          <label>Período (dias)</label>
+          <input type="number" id="dias" value="7" min="1" max="30">
+        </div>
+        <div>
+          <label>Formato do post</label>
+          <select id="formato">
+            <option value="carrossel">Carrossel</option>
+            <option value="estatico">Post estático</option>
+            <option value="video">Vídeo (script)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="newsBlock" style="display:none">
+        <label class="check"><input type="checkbox" id="incluirNoticias"> Incluir notícias da semana</label>
+        <label class="check"><input type="checkbox" id="semanaAnterior"> Usar também semana anterior</label>
+      </div>
+
+      <label class="check"><input type="checkbox" id="sugerirDataTematica"> Sugerir data temática próxima <small>(dia das mães, namorados, etc.)</small></label>
+
+      <div style="display:flex;gap:0.8rem;flex-wrap:wrap">
+        <button id="btn">📋 Gerar briefing</button>
+        <button id="btnIA" class="secondary" title="Gera o briefing E roda direto na Claude API">🤖 Gerar com IA agora</button>
+      </div>
+      <p class="info-text" id="aiHint" style="margin-top:0.6rem">A opção "Gerar com IA" usa o modelo Claude Sonnet 4.6 e consome tokens da sua conta Anthropic.</p>
+    </div>
+
+    <div id="status"></div>
+    <div id="resultado"></div>
+  </div>
+</div>
+
+<!-- ============ DIALOG: VER ARQUIVO ============ -->
+<dialog id="dlgView">
+  <div class="dialog-header">
+    <h2 id="dlgViewTitle">📄 Visualizar arquivo</h2>
+    <button class="dialog-close" onclick="document.getElementById('dlgView').close()">×</button>
+  </div>
+  <div class="dialog-body">
+    <pre id="dlgViewContent" style="background:var(--bg);padding:1rem;border-radius:4px;white-space:pre-wrap;font-family:'Space Grotesk',monospace;font-size:0.85rem;line-height:1.5;color:#ddd;max-height:60vh;overflow-y:auto"></pre>
+  </div>
+  <div class="dialog-footer">
+    <button class="secondary" onclick="document.getElementById('dlgView').close()">Fechar</button>
+  </div>
+</dialog>
+
+<!-- ============ DIALOG: EDITAR ARQUIVO ============ -->
+<dialog id="dlgEdit">
+  <div class="dialog-header">
+    <h2 id="dlgEditTitle">✏️ Editar arquivo</h2>
+    <button class="dialog-close" onclick="document.getElementById('dlgEdit').close()">×</button>
+  </div>
+  <div class="dialog-body">
+    <textarea id="dlgEditContent" style="min-height:400px"></textarea>
+  </div>
+  <div class="dialog-footer">
+    <button class="secondary" onclick="document.getElementById('dlgEdit').close()">Cancelar</button>
+    <button id="dlgEditSave">💾 Salvar alterações</button>
+  </div>
+</dialog>
+
+<!-- ============ DIALOG: RESULTADO DA IA ============ -->
+<dialog id="dlgAI">
+  <div class="dialog-header">
+    <h2>🤖 Roteiros gerados pela IA</h2>
+    <button class="dialog-close" onclick="document.getElementById('dlgAI').close()">×</button>
+  </div>
+  <div class="dialog-body">
+    <p class="info-text" id="dlgAIMeta"></p>
+    <div class="briefing-box">
+      <button class="copy" onclick="copyAIResult()">📋 Copiar</button>
+      <button class="copy" onclick="downloadAIResult()">⬇️ Baixar .md</button>
+      <pre id="dlgAIContent"></pre>
+    </div>
+  </div>
+  <div class="dialog-footer">
+    <button class="secondary" onclick="document.getElementById('dlgAI').close()">Fechar</button>
+  </div>
+</dialog>
+
+<!-- ============ DIALOG: ADICIONAR CLIENTE ============ -->
+<dialog id="dlgNewClient">
+  <div class="dialog-header">
+    <h2>➕ Adicionar novo cliente</h2>
+    <button class="dialog-close" onclick="document.getElementById('dlgNewClient').close()">×</button>
+  </div>
+  <div class="dialog-body">
+
+    <h3>Identidade</h3>
+    <div class="row">
+      <div>
+        <label>Nome do cliente *</label>
+        <input type="text" id="ncName" placeholder="Ex: Clínica Saúde Total">
+      </div>
+      <div>
+        <label>ID (slug, gerado automaticamente)</label>
+        <input type="text" id="ncId" placeholder="clinica-saude-total">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Instagram (sem @) *</label>
+        <input type="text" id="ncInstagram" placeholder="clinicasaudetotal">
+      </div>
+      <div>
+        <label>Website</label>
+        <input type="text" id="ncWebsite" placeholder="https://...">
+      </div>
+    </div>
+
+    <h3>Orientações mestres</h3>
+    <label>Descrição do cliente *</label>
+    <p class="info-text">Posicionamento, persona, público, tom geral. Vai sempre junto com os arquivos pra orientar a IA.</p>
+    <textarea id="ncDescription" placeholder="Descreva o cliente: o que faz, como se posiciona, público-alvo, tom de voz, regras gerais..." style="min-height:140px"></textarea>
+
+    <h3>Configurações de conteúdo</h3>
+    <label>Tom de voz</label>
+    <input type="text" id="ncTone" placeholder="Ex: Casual, divertido, sem formalidade">
+
+    <label>Áreas/temas a balancear (separados por vírgula)</label>
+    <input type="text" id="ncBalance" placeholder="Ex: pizzas, jogos, ambiente">
+
+    <label>Temas proibidos (separados por vírgula)</label>
+    <input type="text" id="ncForbidden" placeholder="Ex: política, polêmicas">
+
+    <label>Hashtags base (separadas por espaço)</label>
+    <input type="text" id="ncHashtags" placeholder="#hashtag1 #hashtag2 #hashtag3">
+
+    <label class="check"><input type="checkbox" id="ncNewsEnabled"> Habilitar pesquisa de notícias jurídicas <small>(usar só pra escritórios de advocacia)</small></label>
+
+    <h3>Conteúdo inicial (opcional)</h3>
+    <p class="info-text">Já pode jogar legendas e transcrições aqui. Pode adicionar mais depois pelo painel Biblioteca.</p>
+    <div id="initialContentList"></div>
+    <button class="secondary" id="btnAddInitialContent">➕ Adicionar mais um item</button>
+
+  </div>
+  <div class="dialog-footer">
+    <button class="secondary" onclick="document.getElementById('dlgNewClient').close()">Cancelar</button>
+    <button id="btnCreateClient">✅ Criar cliente</button>
+  </div>
+</dialog>
+
+<script src="/app.js"></script>
+</body>
+</html>

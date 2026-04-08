@@ -1,0 +1,37 @@
+{
+  "id": "id-do-cliente-em-slug-sem-espaco",
+  "name": "Nome de Exibição do Cliente",
+  "instagram": "handle_sem_arroba",
+  "website": "https://site-do-cliente.com/",
+
+  "seriesName": "Nome da série/quadro de conteúdo (ou string vazia se não tiver)",
+  "tone": "Descreva o tom de voz: formal/casual, técnico/leigo, divertido/sério, qualquer tique do cliente.",
+  "captionStructure": "Como as legendas costumam ser estruturadas (ex: gancho + explicação + CTA + hashtags)",
+
+  "forbiddenTopics": ["temas que NUNCA devem aparecer", "outro tabu"],
+  "requiredBalance": ["áreas/temas que devem ser balanceados ao longo da semana"],
+  "preferredFormats": ["vídeo", "carrossel", "estático"],
+
+  "referenceProfiles": [
+    { "handle": "perfil_de_inspiracao_1", "label": "por que é referência" },
+    { "handle": "perfil_de_inspiracao_2", "label": "outra área de referência" }
+  ],
+
+  "hashtagsBase": ["#hashtag1", "#hashtag2", "#hashtag3"],
+  "extraInstructions": "Qualquer outra regra, convenção, frases típicas, CTA padrão, etc.",
+
+  "newsFeeds": [
+    "https://g1.globo.com/rss/g1/economia/",
+    "https://agenciabrasil.ebc.com.br/rss/economia/feed.xml"
+  ],
+  "newsKeywords": [
+    "palavra-chave-1",
+    "palavra-chave-2",
+    "\\bACRONIMO\\b"
+  ],
+  "newsExclude": [
+    "tema-a-evitar"
+  ],
+
+  "recentPostsFallback": ""
+}

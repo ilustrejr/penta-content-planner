@@ -1,0 +1,19 @@
+{
+  "name": "jec-content-planner",
+  "version": "1.0.0",
+  "description": "Planejador de conteúdo Instagram - JEC Advogados",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.85.0",
+    "cheerio": "^1.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.1",
+    "express": "^4.21.0",
+    "node-fetch": "^3.3.2",
+    "rss-parser": "^3.13.0"
+  }
+}

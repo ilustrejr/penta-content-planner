@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>PENTA. Content Planner — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .login-card {
+    background: var(--bg-elev);
+    padding: 3rem 2.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    border-top: 3px solid var(--accent);
+    width: 92vw;
+    max-width: 420px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+  }
+  .login-card .logo {
+    font-size: 2.4rem;
+    margin-bottom: 0.4rem;
+  }
+  .login-card .product-tag {
+    margin-bottom: 2rem;
+    display: inline-block;
+  }
+  .login-card form { margin-top: 1rem; }
+  .login-card button {
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+  .login-error {
+    color: var(--accent-2);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 1rem;
+    min-height: 1.2em;
+  }
+</style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logo">PENTA<span class="dot">.</span></div>
+    <span class="product-tag">Content Planner</span>
+    <form id="loginForm">
+      <label>Senha</label>
+      <input type="password" id="password" required autofocus placeholder="••••••••">
+      <button type="submit">Entrar</button>
+      <p class="login-error" id="error"></p>
+    </form>
+  </div>
+<script>
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const password = document.getElementById("password").value;
+  const errorEl = document.getElementById("error");
+  errorEl.textContent = "";
+  try {
+    const r = await fetch("/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      errorEl.textContent = data.error || "Senha incorreta";
+      return;
+    }
+    window.location.href = "/";
+  } catch (err) {
+    errorEl.textContent = "Erro de conexão";
+  }
+});
+</script>
+</body>
+</html>

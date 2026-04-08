@@ -1,0 +1,34 @@
+# Render Blueprint — PENTA Content Planner
+# Tipo: Web Service (free tier, sem disco persistente)
+# Storage: Cloudflare R2 (configurado por env vars no painel do Render)
+
+services:
+  - type: web
+    name: penta-content-planner
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: STORAGE_BACKEND
+        value: s3
+      # Os valores abaixo VOCÊ define no painel do Render (não no arquivo).
+      # Marcar como sync: false faz o Render pedir o valor manualmente.
+      - key: APP_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
