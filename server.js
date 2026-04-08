@@ -148,6 +148,53 @@ app.delete("/library/:id/:type/:filename", async (req, res) => {
   }
 });
 
+// =============== DEBUG WIPE: apaga TUDO do bucket R2 (temporário) ===============
+app.post("/debug/wipe", async (_req, res) => {
+  try {
+    const { S3Client, ListObjectsV2Command, DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+    const client = new S3Client({
+      region: "auto",
+      endpoint: process.env.R2_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      },
+      forcePathStyle: true,
+    });
+
+    const allKeys = [];
+    let token = undefined;
+    do {
+      const r = await client.send(
+        new ListObjectsV2Command({
+          Bucket: process.env.R2_BUCKET,
+          ContinuationToken: token,
+        })
+      );
+      for (const obj of r.Contents || []) {
+        if (obj.Key) allKeys.push(obj.Key);
+      }
+      token = r.IsTruncated ? r.NextContinuationToken : undefined;
+    } while (token);
+
+    const deleted = [];
+    const errors = [];
+    for (const key of allKeys) {
+      try {
+        await client.send(new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET, Key: key }));
+        deleted.push(key);
+      } catch (e) {
+        errors.push({ key, error: e.message });
+      }
+    }
+
+    res.json({ ok: true, totalFound: allKeys.length, deleted, errors });
+  } catch (e) {
+    console.error("[DEBUG WIPE]", e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 // =============== DEBUG TLS CRU PRO R2 (sem SDK, sem credenciais) ===============
 app.get("/debug/r2-tls", async (_req, res) => {
   const tls = await import("node:tls");
