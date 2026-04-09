@@ -8,40 +8,71 @@ const FORMAT_LABELS = {
 };
 
 const FORMAT_TEMPLATES = {
-  carrossel: `Cada post deve ser um **CARROSSEL** entregue assim:
+  carrossel: `**Para CARROSSEL — siga rigorosamente essa estrutura:**
 
-- **Slides** (mínimo 5, máximo 10) — para cada slide:
-  - Texto que aparece no slide
-  - Descrição visual: o que deve aparecer (foto/ilustração/composição)
-- **Legenda completa** com gancho na 1ª linha + desenvolvimento + CTA claro
+Cada carrossel tem entre 5 e 10 slides. Para CADA slide, descreva:
+
+1. **Número do slide** (ex: "Slide 1 de 7")
+2. **Função do slide** na narrativa (gancho, contexto, dado, exemplo, virada, CTA, etc.)
+3. **Texto que aparece no slide** — literal, pronto pra colocar no design. Inclua:
+   - Título principal (1 linha curta)
+   - Subtítulo ou texto de apoio (se houver)
+   - Hierarquia: o que é grande, o que é pequeno
+4. **Descrição visual completa** — descreva como se estivesse briefando um designer:
+   - Cor dominante e mood (ex: "fundo escuro com lima neon nos números")
+   - Composição (centralizado / canto / fullbleed)
+   - Que tipo de imagem/ilustração/grafismo aparece
+   - Onde fica o texto (topo / centro / base)
+   - Algum elemento interativo (seta, número grande, ícone)
+5. **Call-to-scroll** (se aplicável) — frase ou seta indicando "veja o próximo slide"
+
+**Estrutura recomendada da narrativa:**
+- **Slide 1:** gancho forte. Pode ser uma pergunta provocativa, estatística impactante, ou afirmação polêmica. NUNCA explica tudo no slide 1 — instiga curiosidade pro próximo.
+- **Slides 2 a N-1:** desenvolvimento. UM ponto claro por slide. Sem amontoar texto. Cada slide é uma unidade visual completa.
+- **Penúltimo slide:** insight, virada, ou síntese do que foi dito.
+- **Último slide:** CTA explícito + call to bio. Ex: "Quer saber mais? Link na bio."
+
+Depois de descrever todos os slides, entregue:
+
+- **Legenda completa** (a que vai abaixo do post no feed) — com gancho na primeira linha + desenvolvimento curto + CTA + hashtags
+- **Hashtags base + temáticas**`,
+
+  estatico: `**Para POST ESTÁTICO — uma única imagem ou arte:**
+
+- **Descrição da imagem completa** — o que aparece (composição, elementos, cores, mood, estilo). Detalhe suficiente pra um designer executar sem dúvidas.
+- **Texto sobreposto** (se aplicável):
+  - Título principal (frase curta de impacto)
+  - Subtítulo (se houver)
+  - Posicionamento na imagem (topo, centro, base)
+- **Legenda completa** (gancho + desenvolvimento + CTA)
 - **Hashtags**`,
 
-  estatico: `Cada post deve ser um **POST ESTÁTICO** entregue assim:
-
-- **Descrição da imagem**: o que aparece (composição, elementos, cores, mood)
-- **Texto sobre a imagem** (se aplicável): título principal + subtítulo
-- **Legenda completa** com gancho na 1ª linha + desenvolvimento + CTA claro
-- **Hashtags**`,
-
-  video: `Cada post deve ser um **SCRIPT DE VÍDEO** entregue assim:
+  video: `**Para SCRIPT DE VÍDEO:**
 
 - **Roteiro com falas** segundo a segundo ou cena a cena, contendo:
-  - Gancho dos primeiros 3 segundos
-  - Desenvolvimento (40-50s)
-  - Virada/insight
+  - Gancho dos primeiros 3 segundos (frase de impacto, pergunta, ou cena visual forte)
+  - Desenvolvimento (40-60s)
+  - Virada / insight
   - CTA final
-- **Indicações de cena/corte/cenário** entre [colchetes]
+- **Indicações de cena, corte e cenário** entre [colchetes]
 - **Legenda completa** com gancho + desenvolvimento + CTA
 - **Hashtags**`,
 };
 
-export function montarBriefing({ client, dias, formato, incluirNoticias, sugerirDataTematica, fontes }) {
+export function montarBriefing({ client, dias, formatos, incluirNoticias, sugerirDataTematica, fontes }) {
   const lines = [];
+
+  // String descritiva da distribuição
+  const distribuicao = Object.entries(formatos)
+    .filter(([_, n]) => n > 0)
+    .map(([f, n]) => `${n} ${FORMAT_LABELS[f]}`)
+    .join(" + ");
+
   lines.push(`# Briefing — Planejamento de conteúdo @${client.instagram}`);
   lines.push(``);
   lines.push(`**Cliente:** ${client.name}`);
   lines.push(`**Período:** ${dias} dias`);
-  lines.push(`**Formato:** ${FORMAT_LABELS[formato] || formato}`);
+  lines.push(`**Distribuição de formatos:** ${distribuicao} = ${dias} posts`);
   lines.push(`**Incluir notícias recentes:** ${incluirNoticias ? "sim" : "não"}`);
   lines.push(`**Sugerir data temática próxima:** ${sugerirDataTematica ? "sim" : "não"}`);
   lines.push(``);
@@ -160,18 +191,36 @@ export function montarBriefing({ client, dias, formato, incluirNoticias, sugerir
   lines.push(``);
   lines.push(`## SUA TAREFA`);
   lines.push(``);
-  lines.push(`Gere **${dias} posts** (1 por dia) para o @${client.instagram} seguindo TODAS as regras acima.`);
+  lines.push(`Gere **${dias} posts** (1 por dia) para o @${client.instagram}, distribuídos assim:`);
   lines.push(``);
-  lines.push(FORMAT_TEMPLATES[formato] || FORMAT_TEMPLATES.video);
+  Object.entries(formatos).forEach(([f, n]) => {
+    if (n > 0) lines.push(`- **${n} posts** em formato **${FORMAT_LABELS[f]}**`);
+  });
   lines.push(``);
-  lines.push(`### Estrutura por post`);
+  lines.push(`Distribua os formatos ao longo dos dias da forma que fizer mais sentido pro tema de cada post (alguns assuntos pedem vídeo, outros pedem carrossel). Mantenha variedade.`);
+  lines.push(``);
+
+  // Renderiza o template de cada formato selecionado
+  lines.push(`### Como entregar cada formato`);
+  lines.push(``);
+  Object.entries(formatos).forEach(([f, n]) => {
+    if (n === 0) return;
+    lines.push(`#### ${FORMAT_LABELS[f]}`);
+    lines.push(``);
+    lines.push(FORMAT_TEMPLATES[f]);
+    lines.push(``);
+  });
+
+  lines.push(`### Cabeçalho de cada post`);
+  lines.push(``);
+  lines.push(`Pra cada post, comece com:`);
   lines.push(``);
   lines.push(`**Dia X — [Tema]**`);
   if (client.requiredBalance?.length) {
     lines.push(`- **Área:** ${client.requiredBalance.join(" | ")}`);
   }
-  lines.push(`- **Formato:** ${FORMAT_LABELS[formato] || formato}`);
-  lines.push(`- **Fonte:** url ou nome (se baseado em notícia/data temática/etc.)`);
+  lines.push(`- **Formato:** [carrossel | post estático | vídeo]`);
+  lines.push(`- **Fonte:** url ou nome (se baseado em notícia/data temática)`);
   lines.push(`- **Justificativa:** por que esse tema agora`);
   lines.push(`- **Conteúdo do post** no formato pedido acima`);
   lines.push(`- **Legenda + hashtags**`);

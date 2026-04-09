@@ -12,16 +12,18 @@
 
 <!-- ============ TOPBAR ============ -->
 <div class="topbar">
-  <div class="topbar-row">
-    <div class="logo">PENTA<span class="dot">.</span></div>
-    <span class="product-tag">Content Planner</span>
-  </div>
-  <p class="client-prompt">Escolha o cliente que deseja gerar o planejamento</p>
-  <div class="client-selector-row">
-    <select id="clientSelect">
-      <option value="">Carregando clientes...</option>
-    </select>
-    <button class="btn-add-client" id="btnAddClient">➕ Adicionar cliente</button>
+  <div class="topbar-inner">
+    <div class="topbar-row">
+      <div class="logo">PENTA<span class="dot">.</span></div>
+      <span class="product-tag">Content Planner</span>
+    </div>
+    <p class="client-prompt">Escolha o cliente que deseja gerar o planejamento</p>
+    <div class="client-selector-row">
+      <select id="clientSelect">
+        <option value="">Carregando clientes...</option>
+      </select>
+      <button class="btn-add-client" id="btnAddClient">+ Adicionar cliente</button>
+    </div>
   </div>
 </div>
 
@@ -90,19 +92,26 @@
     <!-- ============ GERAR PLANEJAMENTO ============ -->
     <div class="card">
       <h2>Gerar planejamento</h2>
-      <div class="row">
-        <div>
-          <label>Período (dias)</label>
-          <input type="number" id="dias" value="7" min="1" max="30">
+
+      <label>Período (dias)</label>
+      <input type="number" id="dias" value="7" min="1" max="30">
+
+      <label>Distribuição de formatos</label>
+      <p class="info-text">Defina quantos posts de cada formato. A soma deve bater com o período.</p>
+      <div class="formato-counters">
+        <div class="formato-counter">
+          <span class="formato-label">🎬 Vídeo (script)</span>
+          <input type="number" class="qtdFormato" id="qtdVideo" data-formato="video" value="3" min="0" max="30">
         </div>
-        <div>
-          <label>Formato do post</label>
-          <select id="formato">
-            <option value="carrossel">Carrossel</option>
-            <option value="estatico">Post estático</option>
-            <option value="video">Vídeo (script)</option>
-          </select>
+        <div class="formato-counter">
+          <span class="formato-label">🎠 Carrossel</span>
+          <input type="number" class="qtdFormato" id="qtdCarrossel" data-formato="carrossel" value="2" min="0" max="30">
         </div>
+        <div class="formato-counter">
+          <span class="formato-label">🖼️ Post estático</span>
+          <input type="number" class="qtdFormato" id="qtdEstatico" data-formato="estatico" value="2" min="0" max="30">
+        </div>
+        <div class="formato-total ok" id="formatoTotal">Total: 7 / 7 ✓</div>
       </div>
 
       <div id="newsBlock" style="display:none">
@@ -112,7 +121,7 @@
 
       <label class="check"><input type="checkbox" id="sugerirDataTematica"> Sugerir data temática próxima <small>(dia das mães, namorados, etc.)</small></label>
 
-      <div style="display:flex;gap:0.8rem;flex-wrap:wrap">
+      <div class="gerar-buttons" style="display:flex;gap:0.8rem;flex-wrap:wrap">
         <button id="btn">📋 Gerar briefing</button>
         <button id="btnIA" class="secondary" title="Gera o briefing E roda direto na Claude API">🤖 Gerar com IA agora</button>
       </div>

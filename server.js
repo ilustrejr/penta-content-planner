@@ -392,7 +392,32 @@ async function buildBriefing(req) {
   const client = await getClient(clientId);
 
   const dias = parseInt(req.body.dias || 7, 10);
-  const formato = req.body.formato || "video";
+
+  // Aceita formatos como objeto { video: 3, carrossel: 2, estatico: 2 }
+  // ou (compat) formato como string única (vira N do dito formato)
+  let formatos;
+  if (req.body.formatos && typeof req.body.formatos === "object") {
+    formatos = {
+      video: parseInt(req.body.formatos.video || 0, 10),
+      carrossel: parseInt(req.body.formatos.carrossel || 0, 10),
+      estatico: parseInt(req.body.formatos.estatico || 0, 10),
+    };
+  } else if (req.body.formato) {
+    formatos = { video: 0, carrossel: 0, estatico: 0 };
+    formatos[req.body.formato] = dias;
+  } else {
+    formatos = { video: dias, carrossel: 0, estatico: 0 };
+  }
+  const totalFormatos = formatos.video + formatos.carrossel + formatos.estatico;
+  if (totalFormatos !== dias) {
+    throw new Error(
+      `A soma dos formatos (${totalFormatos}) tem que ser igual ao período (${dias})`
+    );
+  }
+  if (totalFormatos === 0) {
+    throw new Error("Selecione pelo menos um formato");
+  }
+
   const incluirNoticias = !!req.body.incluirNoticias && (client.newsFeeds?.length > 0);
   const semanaAnterior = !!req.body.semanaAnterior;
   const sugerirDataTematica = !!req.body.sugerirDataTematica;
@@ -435,7 +460,7 @@ async function buildBriefing(req) {
   const briefing = montarBriefing({
     client,
     dias,
-    formato,
+    formatos,
     incluirNoticias,
     sugerirDataTematica,
     fontes,
@@ -445,13 +470,20 @@ async function buildBriefing(req) {
   const filepath = `output/${clientId}/briefing-${stamp}.md`;
   await storage.write(filepath, briefing);
 
+  // String resumo da distribuição (pra UI mostrar)
+  const distribuicao = Object.entries(formatos)
+    .filter(([_, n]) => n > 0)
+    .map(([f, n]) => `${n} ${f}`)
+    .join(" + ");
+
   return {
     client,
     briefing,
     filepath,
     resumo: {
       cliente: client.name,
-      formato,
+      formatos,
+      distribuicao,
       noticiasEncontradas: noticias.length,
       postsClienteLidos: clientPosts.filter((p) => !p.error).length,
       libraryPosts: library.posts.length,

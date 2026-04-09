@@ -71,19 +71,48 @@ async function selectClient(id) {
   document.getElementById("newsBlock").style.display = hasNews ? "block" : "none";
   if (hasNews) document.getElementById("incluirNoticias").checked = true;
 
-  // Formato preferido
-  const fmt = document.getElementById("formato");
-  if (currentClient.preferredFormats?.length) {
-    const map = { "vídeo": "video", "video": "video", "carrossel": "carrossel", "estático": "estatico", "estatico": "estatico" };
-    const mapped = map[currentClient.preferredFormats[0].toLowerCase()] || "video";
-    if ([...fmt.options].some((o) => o.value === mapped)) fmt.value = mapped;
-  }
-
   document.getElementById("status").innerHTML = "";
   document.getElementById("resultado").innerHTML = "";
 
+  updateFormatoTotal();
   await refreshLibrary();
 }
+
+// =============== FORMATO COUNTERS ===============
+function getFormatos() {
+  return {
+    video: parseInt(document.getElementById("qtdVideo").value || 0, 10),
+    carrossel: parseInt(document.getElementById("qtdCarrossel").value || 0, 10),
+    estatico: parseInt(document.getElementById("qtdEstatico").value || 0, 10),
+  };
+}
+
+function updateFormatoTotal() {
+  const dias = parseInt(document.getElementById("dias").value || 0, 10);
+  const f = getFormatos();
+  const total = f.video + f.carrossel + f.estatico;
+  const el = document.getElementById("formatoTotal");
+  if (total === dias && total > 0) {
+    el.textContent = `Total: ${total} / ${dias} ✓`;
+    el.className = "formato-total ok";
+  } else if (total === 0) {
+    el.textContent = `Total: 0 / ${dias} — selecione pelo menos um formato`;
+    el.className = "formato-total error";
+  } else {
+    el.textContent = `Total: ${total} / ${dias} — ${total > dias ? "remova" : "adicione"} ${Math.abs(total - dias)}`;
+    el.className = "formato-total error";
+  }
+  // Habilita/desabilita botões de gerar
+  const valid = total === dias && total > 0;
+  document.getElementById("btn").disabled = !valid;
+  const btnIA = document.getElementById("btnIA");
+  if (systemStatus.aiEnabled) btnIA.disabled = !valid;
+}
+
+document.getElementById("dias").addEventListener("input", updateFormatoTotal);
+document.querySelectorAll(".qtdFormato").forEach((el) => {
+  el.addEventListener("input", updateFormatoTotal);
+});
 
 // =============== LIBRARY ===============
 async function refreshLibrary() {
@@ -346,7 +375,7 @@ document.getElementById("btn").onclick = async () => {
   const body = {
     clientId: currentClient.id,
     dias: document.getElementById("dias").value,
-    formato: document.getElementById("formato").value,
+    formatos: getFormatos(),
     incluirNoticias: document.getElementById("incluirNoticias")?.checked || false,
     semanaAnterior: document.getElementById("semanaAnterior")?.checked || false,
     sugerirDataTematica: document.getElementById("sugerirDataTematica").checked,
@@ -361,7 +390,7 @@ document.getElementById("btn").onclick = async () => {
     const data = await r.json();
     if (!data.ok) throw new Error(data.error || "Erro desconhecido");
 
-    status.innerHTML = `<p class="status-line success">✅ <b>${data.resumo.cliente}</b> &nbsp;•&nbsp; ${data.resumo.formato} &nbsp;•&nbsp; ${data.resumo.libraryPosts} posts da library &nbsp;•&nbsp; ${data.resumo.libraryTranscripts} transcripts &nbsp;•&nbsp; ${data.resumo.noticiasEncontradas} notícias &nbsp;•&nbsp; ${data.resumo.datasTematicas} datas temáticas &nbsp;•&nbsp; ${data.resumo.bytesBriefing} chars</p>`;
+    status.innerHTML = `<p class="status-line success">✅ <b>${data.resumo.cliente}</b> &nbsp;•&nbsp; ${data.resumo.distribuicao || ""} &nbsp;•&nbsp; ${data.resumo.libraryPosts} posts da library &nbsp;•&nbsp; ${data.resumo.libraryTranscripts} transcripts &nbsp;•&nbsp; ${data.resumo.noticiasEncontradas} notícias &nbsp;•&nbsp; ${data.resumo.datasTematicas} datas temáticas &nbsp;•&nbsp; ${data.resumo.bytesBriefing} chars</p>`;
 
     out.innerHTML = `
       <div class="step"><b>1.</b> Briefing salvo em <code>${data.filepath.replace(/\\/g, "/")}</code></div>
@@ -396,7 +425,7 @@ document.getElementById("btnIA").onclick = async () => {
   const body = {
     clientId: currentClient.id,
     dias: document.getElementById("dias").value,
-    formato: document.getElementById("formato").value,
+    formatos: getFormatos(),
     incluirNoticias: document.getElementById("incluirNoticias")?.checked || false,
     semanaAnterior: document.getElementById("semanaAnterior")?.checked || false,
     sugerirDataTematica: document.getElementById("sugerirDataTematica").checked,

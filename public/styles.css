@@ -40,6 +40,10 @@ h3 { color: var(--accent-3); font-size: 0.85rem; letter-spacing: 0.05em; margin:
   border-bottom: 2px solid var(--accent);
   padding: 1.2rem 2rem;
 }
+.topbar-inner {
+  max-width: 880px;
+  margin: 0 auto;
+}
 .topbar-row {
   display: flex;
   align-items: center;
@@ -94,27 +98,37 @@ h3 { color: var(--accent-3); font-size: 0.85rem; letter-spacing: 0.05em; margin:
   font-family: var(--body);
   font-size: 0.95rem;
   font-weight: 500;
-  min-width: 320px;
+  flex: 1;
+  min-width: 0;
   cursor: pointer;
 }
 .client-selector-row select:focus { outline: none; border-color: var(--accent); }
+/* Botão Adicionar cliente — estilo outline igual ao product-tag */
 .btn-add-client {
-  background: var(--accent-2);
-  color: #000;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  font-family: var(--display);
-  font-size: 0.75rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0.5rem 1rem;
+  font-family: var(--body);
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.18em;
   cursor: pointer;
-  border-radius: 3px;
-  margin-top: 0;
+  border-radius: 2px;
+  margin: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  font-weight: 600;
+  transition: all 0.15s;
 }
-.btn-add-client:hover { box-shadow: 0 0 18px rgba(255, 46, 99, 0.4); }
+.btn-add-client:hover {
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 0 18px rgba(212, 255, 0, 0.4);
+}
 
 /* ---------- LAYOUT ---------- */
-.container { padding: 2rem; max-width: 920px; }
+.container { padding: 2rem; max-width: 880px; margin: 0 auto; }
 .empty { padding: 3rem 2rem; text-align: center; color: var(--muted); }
 .empty h2 { color: var(--accent-2); }
 
@@ -434,6 +448,139 @@ dialog::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
 }
 .initial-content-item .row { gap: 0.6rem; }
 .initial-content-item button.tiny.danger { float: right; margin-top: 0.3rem; }
+
+/* ---------- FORMATO COUNTERS ---------- */
+.formato-counters {
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin-top: 0.4rem;
+}
+.formato-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+}
+.formato-counter:last-of-type { border-bottom: none; }
+.formato-counter .formato-label {
+  font-size: 0.85rem;
+  color: var(--text);
+  flex: 1;
+}
+.formato-counter input[type="number"] {
+  width: 70px;
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+  font-family: var(--display);
+  font-size: 0.95rem;
+}
+.formato-total {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.4rem;
+  border-top: 1px solid var(--border-strong);
+  font-family: var(--display);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+.formato-total.ok { color: var(--accent); }
+.formato-total.error { color: var(--accent-2); }
+
+/* ---------- MOBILE ---------- */
+@media (max-width: 768px) {
+  body { font-size: 15px; }
+
+  .topbar { padding: 0.9rem 1rem; }
+  .topbar-row { gap: 0.8rem; }
+  .logo { font-size: 1.5rem; }
+  .product-tag { font-size: 0.65rem; padding: 0.3rem 0.6rem; letter-spacing: 0.15em; }
+
+  .client-prompt { font-size: 0.7rem; margin-top: 0.8rem; }
+
+  .client-selector-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .client-selector-row select {
+    width: 100%;
+    min-width: 0;
+  }
+  .btn-add-client {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+    padding: 0.7rem 1rem;
+  }
+
+  .container { padding: 1rem; }
+  .card { padding: 1.2rem; }
+
+  h2 { font-size: 1rem; }
+  h3 { font-size: 0.8rem; }
+
+  .row { flex-direction: column; gap: 0; }
+  .row > div { width: 100%; }
+
+  button {
+    width: 100%;
+    padding: 0.9rem 1rem;
+  }
+  button.copy {
+    width: auto;
+    padding: 0.5rem 0.9rem;
+  }
+  button.tiny { width: auto; }
+  button.secondary { width: 100%; }
+
+  /* Botões em row no card de gerar */
+  .gerar-buttons {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+
+  /* Lista de arquivos da library: actions empilhadas em mobile */
+  .file-item {
+    flex-wrap: wrap;
+  }
+  .file-item .actions {
+    margin-top: 0.4rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .file-item .name { width: 100%; }
+
+  /* Stats */
+  .lib-stats { gap: 0.8rem; font-size: 0.8rem; }
+  .lib-stats span b { font-size: 0.95rem; }
+
+  /* Dialogs */
+  dialog {
+    width: 96vw;
+    max-width: 96vw;
+    margin: 1rem auto;
+  }
+  .dialog-header { padding: 0.9rem 1rem; }
+  .dialog-header h2 { font-size: 0.9rem; }
+  .dialog-body { padding: 1rem; }
+  .dialog-footer { padding: 0.9rem 1rem; flex-direction: column; gap: 0.5rem; }
+  .dialog-footer button { width: 100%; }
+
+  /* Login card */
+  .login-card { padding: 2rem 1.2rem; }
+  .login-card .logo { font-size: 1.9rem; }
+
+  /* Briefing pre menor em mobile */
+  .briefing-box pre { font-size: 0.75rem; padding: 0.8rem; max-height: 380px; }
+
+  /* Step indicators */
+  .step { font-size: 0.85rem; padding: 0.7rem 0.9rem; }
+}
 
 /* scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
