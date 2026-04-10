@@ -74,6 +74,16 @@ async function selectClient(id) {
   document.getElementById("status").innerHTML = "";
   document.getElementById("resultado").innerHTML = "";
 
+  // Carrega campos de configuração editável
+  document.getElementById("cfgSeriesName").value = currentClient.seriesName || "";
+  document.getElementById("cfgCaptionStructure").value = currentClient.captionStructure || "";
+  document.getElementById("cfgExtraInstructions").value = currentClient.extraInstructions || "";
+  document.getElementById("cfgReferenceProfiles").value = (currentClient.referenceProfiles || [])
+    .map((r) => `${r.handle} | ${r.label}`).join("\n");
+  document.getElementById("cfgNewsFeeds").value = (currentClient.newsFeeds || []).join("\n");
+  document.getElementById("cfgNewsKeywords").value = (currentClient.newsKeywords || []).join("\n");
+  document.getElementById("cfgNewsExclude").value = (currentClient.newsExclude || []).join("\n");
+
   updateFormatoTotal();
   await refreshLibrary();
 }
@@ -235,6 +245,50 @@ document.getElementById("btnSaveDescription").onclick = async () => {
   btn.disabled = false;
 };
 
+// =============== SALVAR CONFIGURAÇÕES DO CLIENTE ===============
+document.getElementById("btnSaveConfig").onclick = async () => {
+  if (!currentClient) return;
+  const btn = document.getElementById("btnSaveConfig");
+  btn.disabled = true;
+  try {
+    const updates = {
+      seriesName: document.getElementById("cfgSeriesName").value.trim(),
+      captionStructure: document.getElementById("cfgCaptionStructure").value.trim(),
+      extraInstructions: document.getElementById("cfgExtraInstructions").value.trim(),
+      referenceProfiles: document.getElementById("cfgReferenceProfiles").value
+        .split("\n").map((l) => l.trim()).filter(Boolean)
+        .map((l) => {
+          const [h, ...rest] = l.split("|");
+          return { handle: (h || "").trim(), label: (rest.join("|") || "").trim() };
+        })
+        .filter((r) => r.handle),
+      newsFeeds: document.getElementById("cfgNewsFeeds").value
+        .split("\n").map((l) => l.trim()).filter(Boolean),
+      newsKeywords: document.getElementById("cfgNewsKeywords").value
+        .split("\n").map((l) => l.trim()).filter(Boolean),
+      newsExclude: document.getElementById("cfgNewsExclude").value
+        .split("\n").map((l) => l.trim()).filter(Boolean),
+    };
+    const r = await fetch(`/clients/${currentClient.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error);
+    // Atualiza o currentClient local pra refletir as mudanças
+    Object.assign(currentClient, updates);
+    // Atualiza visibilidade do bloco de notícias
+    const hasNews = (currentClient.newsFeeds || []).length > 0;
+    document.getElementById("newsBlock").style.display = hasNews ? "block" : "none";
+    document.getElementById("cfgSaveFeedback").textContent = "✅ Salvo";
+    setTimeout(() => { document.getElementById("cfgSaveFeedback").textContent = ""; }, 2500);
+  } catch (e) {
+    alert("Erro: " + e.message);
+  }
+  btn.disabled = false;
+};
+
 // =============== ADICIONAR CLIENTE ===============
 document.getElementById("btnAddClient").onclick = () => {
   // Reset
@@ -307,19 +361,10 @@ document.getElementById("btnCreateClient").onclick = async () => {
     requiredBalance: splitCsv(document.getElementById("ncBalance").value),
     forbiddenTopics: splitCsv(document.getElementById("ncForbidden").value),
     hashtagsBase: document.getElementById("ncHashtags").value.trim().split(/\s+/).filter(Boolean),
-    preferredFormats: ["vídeo", "carrossel", "estatico"],
   };
-
-  if (document.getElementById("ncNewsEnabled").checked) {
-    // Pré-popula com feeds e keywords padrão de advocacia
-    config.newsFeeds = [
-      "https://g1.globo.com/rss/g1/economia/",
-      "https://g1.globo.com/rss/g1/politica/",
-      "https://agenciabrasil.ebc.com.br/rss/economia/feed.xml",
-    ];
-    config.newsKeywords = ["INSS", "aposentad", "previd", "FGTS", "juros abusiv", "dívida", "lei", "STF decide", "STJ decide"];
-    config.newsExclude = ["criminal", "homicíd", "tráfic"];
-  }
+  // Nota: newsFeeds, newsKeywords, newsExclude, seriesName, captionStructure,
+  // referenceProfiles e extraInstructions são preenchidos DEPOIS da criação,
+  // no painel "Configurações do cliente" da Biblioteca. Nada é hardcoded.
 
   const btn = document.getElementById("btnCreateClient");
   btn.disabled = true;

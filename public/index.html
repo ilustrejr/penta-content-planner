@@ -53,6 +53,36 @@
         </div>
       </div>
 
+      <details id="cfgDetails">
+        <summary>⚙️ Configurações do cliente (tudo que alimenta o briefing)</summary>
+
+        <label>Nome da série/quadro recorrente</label>
+        <input type="text" id="cfgSeriesName" placeholder="Ex: Whisky com o seu Advogado (vazio se não tiver)">
+
+        <label>Estrutura típica da legenda</label>
+        <input type="text" id="cfgCaptionStructure" placeholder="Ex: TÍTULO EM CAIXA ALTA + parágrafo + CTA + hashtags">
+
+        <label>Instruções extras pro briefing</label>
+        <textarea id="cfgExtraInstructions" placeholder="Qualquer orientação adicional que deve aparecer no briefing..." style="min-height:80px"></textarea>
+
+        <label>Perfis de referência no Instagram (um por linha: handle | descrição)</label>
+        <textarea id="cfgReferenceProfiles" placeholder="cscadv | referência empresarial&#10;prevsite | referência previdenciário" style="min-height:60px"></textarea>
+
+        <label>Feeds RSS de notícias (um por linha, URLs completas)</label>
+        <textarea id="cfgNewsFeeds" placeholder="https://g1.globo.com/rss/g1/economia/&#10;https://agenciabrasil.ebc.com.br/rss/economia/feed.xml" style="min-height:60px"></textarea>
+
+        <label>Palavras-chave pra filtrar notícias (uma por linha)</label>
+        <textarea id="cfgNewsKeywords" placeholder="INSS&#10;aposentadoria&#10;FGTS&#10;juros abusivo" style="min-height:60px"></textarea>
+
+        <label>Palavras a excluir das notícias (uma por linha)</label>
+        <textarea id="cfgNewsExclude" placeholder="criminal&#10;tráfico&#10;homicídio" style="min-height:60px"></textarea>
+
+        <div class="save-row">
+          <button class="secondary" id="btnSaveConfig">💾 Salvar configurações</button>
+          <span class="save-feedback" id="cfgSaveFeedback"></span>
+        </div>
+      </details>
+
       <div class="lib-stats" id="libStats">
         <span><b>0</b>posts publicados</span>
         <span><b>0</b>transcrições de vídeo</span>
@@ -228,8 +258,6 @@
 
     <label>Hashtags base (separadas por espaço)</label>
     <input type="text" id="ncHashtags" placeholder="#hashtag1 #hashtag2 #hashtag3">
-
-    <label class="check"><input type="checkbox" id="ncNewsEnabled"> Habilitar pesquisa de notícias jurídicas <small>(usar só pra escritórios de advocacia)</small></label>
 
     <h3>Conteúdo inicial (opcional)</h3>
     <p class="info-text">Já pode jogar legendas e transcrições aqui. Pode adicionar mais depois pelo painel Biblioteca.</p>
